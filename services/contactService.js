@@ -52,16 +52,35 @@ const getCustomerData = async (contactObj) => {
   }
 };
 
+const processWhenBothExistsSeparately = async (emailContact, phoneContact) => {
+  try {
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+
 function validateEmail(email) {
-  return validator.isEmail(email);
+  try {
+    return validator.isEmail(email);
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
 }
 
 function validatePhoneNumber(phoneNumber) {
-  return validator.isMobilePhone(phoneNumber.toString(), "en-IN");
+  try {
+    return validator.isMobilePhone(phoneNumber.toString(), "en-IN");
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
 }
 
 module.exports = {
   getCustomerData,
+  processWhenBothExistsSeparately,
   validateEmail,
   validatePhoneNumber,
 };

@@ -1,8 +1,9 @@
 const ContactModel = require("../models/contactModel");
 const {
+  getCustomerData,
+  processWhenBothExistsSeparately,
   validateEmail,
   validatePhoneNumber,
-  getCustomerData,
 } = require("../services/contactService");
 
 const addContact = async (req, res) => {
@@ -129,6 +130,19 @@ const addContact = async (req, res) => {
           contact: data,
         });
       }
+
+      // If both exists separately
+      const processedDocument = await processWhenBothExistsSeparately(
+        emailContact,
+        phoneNumberContact
+      );
+      const data = await getCustomerData(processedDocument);
+
+      return res.send({
+        success: true,
+        message: "",
+        contact: data,
+      });
     }
   } catch (error) {
     console.error(error);
