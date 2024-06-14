@@ -4,12 +4,7 @@ const validator = require("validator");
 const getCustomerData = async (contactObj) => {
   try {
     // Getting primary contact
-    let primaryContact;
-    if (contactObj?.linkPrecedence == "primary") {
-      primaryContact = contactObj;
-    } else {
-      primaryContact = await ContactModel.findById(contactObj.linkedId);
-    }
+    const primaryContact = await getPrimary(contactObj);
 
     // Getting all secondary contacts
     const secondaryContacts = await ContactModel.find({
@@ -54,6 +49,59 @@ const getCustomerData = async (contactObj) => {
 
 const processWhenBothExistsSeparately = async (emailContact, phoneContact) => {
   try {
+    // If one is primary and other is secondary of same primary -> get data
+    // If both exits as secondary with same primary -> get data
+    if (
+      (emailContact?.linkPrecedence == "primary" &&
+        phoneContact?.linkedId == emailContact?._id) ||
+      (phoneContact?.linkPrecedence == "primary" &&
+        emailContact?.linkedId == phoneContact?._id) ||
+      (phoneContact?.linkedId &&
+        emailContact?.linkedId &&
+        emailContact?.linkedId == phoneContact?.linkedId)
+    ) {
+      return emailContact;
+    }
+    // If both exists as primary -> update the latest as secondary and all its secondary to new primary id -> get data
+    // If one is primary and other is secondary of different primary -> find the primary -> update the latest as secondary and all its secondary to new primary id -> get data
+    // If both exits as secondary with different primary -> find both primary -> update the latest as secondary and all its secondary to new primary id -> get data
+    const [primaryEmailContact, primaryPhoneContact] = [
+      await getPrimary(emailContact),
+      await getPrimary(phoneContact),
+    ];
+
+    // Updating the primary recent created primary into secondary
+    [primary, secondary] =
+      primaryEmailContact?.createdAt < primaryPhoneContact?.createdAt
+        ? [primaryEmailContact, primaryPhoneContact]
+        : [primaryPhoneContact, primaryEmailContact];
+    secondary.linkPrecedence = "secondary";
+    secondary.linkedId = primary._id;
+
+    await secondary.save();
+
+    // Update all the old linked ids to new linked IDs
+    await ContactModel.updateMany(
+      { linkedId: secondary._id },
+      { $set: { linkedId: primary._id } }
+    );
+
+    return primary;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+
+// Getting the primary contact of the contact provided
+const getPrimary = async (doc) => {
+  try {
+    if (doc?.linkPrecedence == "primary") {
+      return doc;
+    } else {
+      const primaryDoc = await ContactModel.findById(doc.linkedId);
+      return primaryDoc;
+    }
   } catch (error) {
     console.log(error);
     throw new Error(error);

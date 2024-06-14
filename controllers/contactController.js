@@ -29,7 +29,8 @@ const addContact = async (req, res) => {
     if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
       return res.status(500).send({
         success: false,
-        message: "Phone Number format is invalid. Eg: 9876543210",
+        message:
+          "Phone Number format is invalid. Please provide in Indian phone number format Eg: 9876543210",
       });
     }
 
