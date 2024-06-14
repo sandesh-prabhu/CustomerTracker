@@ -25,5 +25,5 @@ MONGO_URI
 
 ## Endpoints
 
-POST method: {{base_url}}/api/v1/contact/identify
+POST method: https://customer-tracker-xi.vercel.app/api/v1/contact/identify
 body: (raw JSON):{ "email": "abc@example.com", "phoneNumber": "9876543210" }
