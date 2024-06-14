@@ -12,6 +12,7 @@ MongoDB
 express
 dotenv
 mongoose
+validator
 
 ## Dev-Dependencies
 
